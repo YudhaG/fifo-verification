@@ -7,7 +7,7 @@ on:
 jobs:
   # Run the full testbench across several FIFO configurations.
   sim:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
       matrix:
@@ -18,9 +18,9 @@ jobs:
           - { depth: 64, width: 32 }
     name: sim (DEPTH=${{ matrix.config.depth }}, WIDTH=${{ matrix.config.width }})
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.12"
           cache: pip
@@ -36,19 +36,19 @@ jobs:
 
       - name: Upload results
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: results-depth${{ matrix.config.depth }}-width${{ matrix.config.width }}
           path: results.xml
 
   # Inject bugs into the RTL and make sure the testbench catches every one.
   mutation:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     name: mutation check
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.12"
           cache: pip
