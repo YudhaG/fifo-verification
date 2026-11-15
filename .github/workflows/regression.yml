@@ -1,0 +1,63 @@
+name: regression
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  # Run the full testbench across several FIFO configurations.
+  sim:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        config:
+          - { depth: 2,  width: 8 }
+          - { depth: 4,  width: 8 }
+          - { depth: 16, width: 8 }
+          - { depth: 64, width: 32 }
+    name: sim (DEPTH=${{ matrix.config.depth }}, WIDTH=${{ matrix.config.width }})
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install Icarus Verilog
+        run: sudo apt-get update && sudo apt-get install -y iverilog
+
+      - name: Install cocotb
+        run: pip install -r requirements.txt
+
+      - name: Run regression
+        run: make DEPTH=${{ matrix.config.depth }} DATA_WIDTH=${{ matrix.config.width }}
+
+      - name: Upload results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: results-depth${{ matrix.config.depth }}-width${{ matrix.config.width }}
+          path: results.xml
+
+  # Inject bugs into the RTL and make sure the testbench catches every one.
+  mutation:
+    runs-on: ubuntu-latest
+    name: mutation check
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install Icarus Verilog
+        run: sudo apt-get update && sudo apt-get install -y iverilog
+
+      - name: Install cocotb
+        run: pip install -r requirements.txt
+
+      - name: Run mutation check
+        run: ./scripts/mutation_check.sh

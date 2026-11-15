@@ -1,0 +1,17 @@
+# simulation output
+sim_build*/
+mutants/
+results.xml
+*.vcd
+*.fst
+*.vvp
+
+# python
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+
+# macOS / editors
+.DS_Store
+.vscode/
